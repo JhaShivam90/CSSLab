@@ -114,11 +114,39 @@
           </div>
           <div class="simulation-output" aria-live="polite">
             <h2>Simulation Output</h2>
+            
+            <!-- Visualizer -->
+            <div id="visualizer" style="display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; min-height: 120px; overflow: hidden;">
+              <div style="text-align: center; z-index: 2;">
+                <div style="font-size: 3rem;">👤</div>
+                <div id="visSubject" style="font-weight: bold; font-size: 0.9rem;">Subject</div>
+              </div>
+              <div id="visLock" style="font-size: 2.5rem; transition: transform 0.3s, color 0.3s; display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative;">
+                <span id="visLockIcon">🔒</span>
+                <span id="visOp" style="font-size: 0.8rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; margin-top: 5px; color: #333;">Operation</span>
+              </div>
+              <div style="text-align: center; z-index: 2;">
+                <div style="font-size: 3rem;">📄</div>
+                <div id="visObject" style="font-weight: bold; font-size: 0.9rem;">Object</div>
+              </div>
+            </div>
+
             <div id="accessOutput" style="margin-bottom: 20px;">Select parameters and evaluate request...</div>
+            
             <h2>Audit Policy Log</h2>
-            <div style="max-height: 200px; overflow-y: auto; background: var(--bg-alt); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+            <div style="max-height: 200px; overflow-y: auto; background: var(--bg-alt); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 20px;">
               <ul id="auditLog" style="list-style-type: none; padding: 0; margin: 0; font-family: monospace; font-size: 0.9rem;">
                 <!-- Log entries will be added here -->
+              </ul>
+            </div>
+
+            <h2>Expected Observations & Results</h2>
+            <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 15px; font-size: 0.95rem; border-radius: 0 4px 4px 0;">
+              <ul style="margin: 0; padding-left: 20px; color: #1e3a8a;">
+                <li><strong>DAC</strong>: Try entering <em>Alice</em> and observe how she gains full access to <em>Public_Syllabus</em> based on ownership.</li>
+                <li><strong>MAC (Confidentiality)</strong>: Observe that a <em>Student</em> (Clearance 2) cannot <em>Read</em> the <em>System_Kernel</em> (Classification 4) due to the "No Read Up" rule.</li>
+                <li><strong>MAC (Integrity)</strong>: Notice that subjects can only <em>Write</em> to objects matching their exact clearance level, preserving data integrity.</li>
+                <li><strong>RBAC</strong>: Select <em>Faculty</em> and observe how they inherit broad rights over academic files but are denied access to core system files.</li>
               </ul>
             </div>
           </div>

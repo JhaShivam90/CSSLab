@@ -120,6 +120,41 @@ document.addEventListener('DOMContentLoaded', () => {
         <p><strong>Policy Reason:</strong> ${reason}</p>
       `;
 
+      // Update Visualizer
+      const visSubject = document.getElementById('visSubject');
+      const visObject = document.getElementById('visObject');
+      const visOp = document.getElementById('visOp');
+      const visLock = document.getElementById('visLock');
+      const visLockIcon = document.getElementById('visLockIcon');
+
+      if (visSubject && visObject && visOp && visLock && visLockIcon) {
+        visSubject.textContent = `${identity} (${role})`;
+        visObject.textContent = obj;
+        visOp.textContent = op.toUpperCase();
+        
+        // Remove animation class to reset
+        visLock.style.transform = 'none';
+        
+        // Force reflow
+        void visLock.offsetWidth;
+
+        if (granted) {
+          visLockIcon.textContent = '🔓';
+          visLock.style.color = '#15803d'; // Green
+          visLock.style.transform = 'scale(1.2)';
+        } else {
+          visLockIcon.textContent = '🔒';
+          visLock.style.color = '#b91c1c'; // Red
+          visLock.style.transform = 'translateX(-10px)';
+          setTimeout(() => {
+            visLock.style.transform = 'translateX(10px)';
+            setTimeout(() => {
+              visLock.style.transform = 'translateX(0)';
+            }, 100);
+          }, 100);
+        }
+      }
+
       if (auditLog) {
         const logEntry = document.createElement('li');
         logEntry.style.paddingBottom = '5px';
@@ -141,20 +176,40 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnSubmitQuiz && quizOutput && quizForm) {
     btnSubmitQuiz.addEventListener('click', () => {
       let score = 0;
+      let feedback = [];
+      
       const q1 = quizForm.elements['q1'].value;
       const q2 = quizForm.elements['q2'].value;
       const q3 = quizForm.elements['q3'].value;
 
-      if (q1 === 'dac') score++;
-      if (q2 === 'readup') score++;
-      if (q3 === 'role') score++;
+      if (q1 === 'dac') {
+        score++;
+      } else if (q1) {
+        feedback.push("Q1 is incorrect: DAC allows the owner to decide access.");
+      }
+
+      if (q2 === 'readup') {
+        score++;
+      } else if (q2) {
+        feedback.push("Q2 is incorrect: The 'No Read Up' principle prevents viewing higher clearance data.");
+      }
+
+      if (q3 === 'role') {
+        score++;
+      } else if (q3) {
+        feedback.push("Q3 is incorrect: RBAC assigns permissions to roles, then roles to users.");
+      }
 
       if (q1 && q2 && q3) {
-        quizOutput.innerHTML = `You scored ${score} out of 3. ${score === 3 ? 'Excellent!' : 'Review the theory section and try again.'}`;
-        quizOutput.style.color = score === 3 ? 'green' : (score > 0 ? 'orange' : 'red');
+        let resultHtml = `You scored ${score} out of 3. ${score === 3 ? 'Excellent!' : 'Review the theory section.'}`;
+        if (feedback.length > 0) {
+          resultHtml += `<ul style="color: #b91c1c; font-weight: normal; margin-top: 10px; font-size: 0.9rem;"><li>${feedback.join('</li><li>')}</li></ul>`;
+        }
+        quizOutput.innerHTML = resultHtml;
+        quizOutput.style.color = score === 3 ? '#15803d' : '#b91c1c';
       } else {
         quizOutput.innerHTML = 'Please answer all questions before submitting.';
-        quizOutput.style.color = 'red';
+        quizOutput.style.color = '#b91c1c';
       }
     });
   }
