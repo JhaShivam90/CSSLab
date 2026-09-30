@@ -2,20 +2,19 @@
 
 Study and implement an access control mechanism to determine whether a subject is permitted to perform a requested operation on an object.
 
-## Inputs
-- **Access Control Model**: DAC, MAC, or RBAC.
-- **Subject Identity**: Text input for the subject's name (e.g., Alice, Admin).
-- **Subject Role / Clearance**: Selection of privilege tier (Guest, Student, Faculty, Administrator).
-- **Target Object**: Resource identifier (e.g., Syllabus, Config file, Kernel).
-- **Requested Operation**: Read, Write, Execute, Delete.
+## Integration README
 
-## Outputs
-- **Access Decision**: Grant or Deny based on the evaluated model rules.
-- **Audit Policy Log**: Persistent timestamped log of each access request, including subject, object, operation, and outcome.
-
-## Dependencies
-- Vanilla HTML5, CSS3, ES6 JavaScript.
-- Uses `../../css/experiment.css` and `../../js/common.js` from the repository root.
+**Group**: Access Control Fundamentals  
+**Experiment ID**: EXP46  
+**Experiment Name**: Access Control Fundamentals  
+**Folder**: `/experiments/access-control-fundamentals/`  
+**Entry File**: `index.html`  
+**Navigation Title**: Access Control Fundamentals  
+**Short Description**: Study and implement an access control mechanism to determine whether a subject is permitted to perform a requested operation on an object using DAC, MAC, and RBAC models.  
+**Required Libraries**: None  
+**Input**: Access Control Model, Subject Identity, Subject Role / Clearance, Target Object, Requested Operation  
+**Output**: Access decision (Grant / Deny) with audit policy log  
+**Expected Navigation Link**: `/experiments/access-control-fundamentals/`
 
 ## Test Cases
 - **DAC**: Input 'Alice' requesting Read on 'public_syllabus'. Outcome: Granted.
