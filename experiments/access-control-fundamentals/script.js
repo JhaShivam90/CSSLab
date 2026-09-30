@@ -132,4 +132,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Quiz Handling
+  const btnSubmitQuiz = document.getElementById('btnSubmitQuiz');
+  const quizOutput = document.getElementById('quizOutput');
+  const quizForm = document.getElementById('quizForm');
+
+  if (btnSubmitQuiz && quizOutput && quizForm) {
+    btnSubmitQuiz.addEventListener('click', () => {
+      let score = 0;
+      const q1 = quizForm.elements['q1'].value;
+      const q2 = quizForm.elements['q2'].value;
+      const q3 = quizForm.elements['q3'].value;
+
+      if (q1 === 'dac') score++;
+      if (q2 === 'readup') score++;
+      if (q3 === 'role') score++;
+
+      if (q1 && q2 && q3) {
+        quizOutput.innerHTML = `You scored ${score} out of 3. ${score === 3 ? 'Excellent!' : 'Review the theory section and try again.'}`;
+        quizOutput.style.color = score === 3 ? 'green' : (score > 0 ? 'orange' : 'red');
+      } else {
+        quizOutput.innerHTML = 'Please answer all questions before submitting.';
+        quizOutput.style.color = 'red';
+      }
+    });
+  }
 });
