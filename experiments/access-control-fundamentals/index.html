@@ -70,6 +70,13 @@
         <section id="simulation" class="tab-content" data-tab-panel="simulation" hidden>
           <div class="simulation-controls">
             <h2>Simulation Controls</h2>
+            <label for="acModel">Access Control Model:</label>
+            <select id="acModel" style="display: block; width: 100%; max-width: 300px; padding: 0.5rem; margin-top: 5px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+              <option value="rbac" selected>Role-Based Access Control (RBAC)</option>
+              <option value="mac">Mandatory Access Control (MAC)</option>
+              <option value="dac">Discretionary Access Control (DAC)</option>
+            </select>
+
             <label for="subIdentity">Subject Identity:</label>
             <input type="text" id="subIdentity" placeholder="e.g., Alice, Bob" style="display: block; width: 100%; max-width: 300px; padding: 0.5rem; margin-top: 5px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
             
