@@ -70,7 +70,10 @@
         <section id="simulation" class="tab-content" data-tab-panel="simulation" hidden>
           <div class="simulation-controls">
             <h2>Simulation Controls</h2>
-            <label for="subRole">Subject Role:</label>
+            <label for="subIdentity">Subject Identity:</label>
+            <input type="text" id="subIdentity" placeholder="e.g., Alice, Bob" style="display: block; width: 100%; max-width: 300px; padding: 0.5rem; margin-top: 5px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+            
+            <label for="subRole">Subject Role/Clearance:</label>
             <select id="subRole">
               <option value="guest">Guest</option>
               <option value="student" selected>Student</option>
@@ -82,18 +85,26 @@
               <option value="public_syllabus">Public_Syllabus.pdf</option>
               <option value="lab_assignment">Lab_Assignment_Grades.xlsx</option>
               <option value="system_config">Server_Config.env</option>
+              <option value="system_kernel">System_Kernel.bin</option>
             </select>
             <label for="opType" style="margin-top: 10px;">Operation:</label>
             <select id="opType">
               <option value="read">READ</option>
               <option value="write">WRITE</option>
+              <option value="execute">EXECUTE</option>
               <option value="delete">DELETE</option>
             </select>
             <button type="button" id="btnEvalAccess">Evaluate Access Request</button>
           </div>
           <div class="simulation-output" aria-live="polite">
             <h2>Simulation Output</h2>
-            <div id="accessOutput">Select parameters and evaluate request...</div>
+            <div id="accessOutput" style="margin-bottom: 20px;">Select parameters and evaluate request...</div>
+            <h2>Audit Policy Log</h2>
+            <div style="max-height: 200px; overflow-y: auto; background: var(--bg-alt); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;">
+              <ul id="auditLog" style="list-style-type: none; padding: 0; margin: 0; font-family: monospace; font-size: 0.9rem;">
+                <!-- Log entries will be added here -->
+              </ul>
+            </div>
           </div>
         </section>
 
