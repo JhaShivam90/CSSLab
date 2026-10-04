@@ -7,9 +7,11 @@
     const titleEl = document.getElementById('exp-title');
     const title = titleEl ? titleEl.textContent.trim() : document.title.replace(' | Virtual Cryptography Laboratory', '').trim();
     
-    // Extract slug from path (e.g., experiments/mac/ -> 'mac')
-    const pathParts = window.location.pathname.replace(/\/+$/, '').split('/');
-    const slug = pathParts[pathParts.length - 1] || 'unknown-experiment';
+    // Extract folder name from path (e.g., .../experiments/mac/ or .../experiments/mac/index.html -> 'mac')
+    const cleanPath = window.location.pathname.replace(/\/index\.html?$/i, '').replace(/\/+$/, '');
+    const pathParts = cleanPath.split('/');
+    let slug = pathParts[pathParts.length - 1] || 'general';
+    if (slug === '' || slug === 'experiments') slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
     return { title, slug };
   }

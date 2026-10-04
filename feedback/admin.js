@@ -145,10 +145,16 @@
       for (const row of rows) {
         try {
           const decrypted = await decryptPayload(row.payload);
+          const expName = (decrypted.experimentTitle && !decrypted.experimentTitle.includes('index.html'))
+            ? decrypted.experimentTitle
+            : (decrypted.experimentSlug && decrypted.experimentSlug !== 'index.html'
+                ? decrypted.experimentSlug
+                : (row.experiment && row.experiment !== 'index.html' ? row.experiment : 'MAC'));
+
           allDecryptedSubmissions.push({
             timestamp: row.timestamp || decrypted.submittedAt || '-',
-            experiment: row.experiment || decrypted.experimentSlug || 'General',
-            experimentTitle: decrypted.experimentTitle || row.experiment,
+            experiment: expName,
+            experimentTitle: expName,
             studentName: decrypted.studentName || 'Anonymous',
             rollNo: decrypted.rollNo || '-',
             rating: decrypted.rating || 0,
