@@ -66,25 +66,25 @@
    ============================================================ */
 
 .formula-box {
-  background: var(--color-code-bg);
+  background: rgba(0, 0, 0, 0.25);
   border-left: 4px solid var(--color-primary);
   padding: 12px 18px;
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 1.05rem;
-  color: var(--color-code-text);
+  color: #ffda8b;
   margin: 14px 0;
   border-radius: 4px;
 }
 
 .code-block {
-  background: var(--color-code-bg);
+  background: #181311;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 12px 16px;
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 0.84rem;
   white-space: pre-wrap;
-  color: var(--color-text);
+  color: #f6f0ec;
   line-height: 1.5;
   margin: 10px 0 0;
 }
@@ -295,7 +295,7 @@
 .form-input,
 .form-textarea,
 .form-select {
-  background: var(--color-code-bg);
+  background: #181311;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 10px 14px;
@@ -384,7 +384,7 @@
 
 /* Result Box */
 .mac-result-box {
-  background: var(--color-code-bg);
+  background: #181311;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 18px 22px;
@@ -416,10 +416,10 @@
 .mac-tag-display {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 1.05rem;
-  color: var(--color-code-text);
+  color: #ffda8b;
   word-break: break-all;
   padding: 12px 14px;
-  background: var(--color-surface-muted);
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 6px;
   border: 1px dashed var(--color-border);
   margin-bottom: 10px;
@@ -459,14 +459,14 @@
 }
 
 .transmitted-msg {
-  color: var(--color-text);
+  color: #f6f0ec;
   background: rgba(255, 255, 255, 0.06);
   padding: 4px 8px;
   border-radius: 4px;
 }
 
 .transmitted-separator {
-  color: var(--color-code-text);
+  color: #ffda8b;
   font-weight: 700;
   font-size: 1.1rem;
   margin: 0 6px;
@@ -600,7 +600,7 @@
 }
 
 .intercept-card {
-  background: var(--color-code-bg);
+  background: #181311;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 12px 14px;
@@ -616,7 +616,7 @@
 .intercept-value {
   font-size: 0.82rem;
   word-break: break-all;
-  color: var(--color-text);
+  color: #f6f0ec;
   line-height: 1.4;
 }
 
@@ -800,7 +800,7 @@
 }
 
 .quiz-option-btn {
-  background: var(--color-code-bg);
+  background: #181311;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 10px 16px;
@@ -838,7 +838,7 @@
 .quiz-reason {
   margin-top: 12px;
   padding: 10px 14px;
-  background: var(--color-code-bg);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 6px;
   font-size: 0.85rem;
   line-height: 1.45;
