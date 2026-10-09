@@ -370,7 +370,9 @@ const samples = {
       "WITHOUT SECOND LATER MISS IDEA ENOUGH EAT FACE WATCH FAR REAL ALMOST LET ABOVE GIRL SOMETIMES MOUNTAIN CUT " +
       "YOUNG TALK SOON LIST SONG BEING LEAVE FAMILY MESSAGE SIMPLE SECRET SECURE CODE CIPHER KEY ENCRYPT DECRYPT " +
       "ATTACK DEFEND MEET NOON DAWN SEND CAESAR SHIFT STANDARD PRACTICE TECHNIQUES COMMUNICATION CRYPTOGRAPHY " +
-      "SECURITY NETWORK DATA TEXT PLAIN").split(" ");
+            "SECURITY NETWORK DATA TEXT PLAIN ARTIFICIAL INTELLIGENCE TRANSFORM HUMANS WORK LIVE " +
+      "QUANTUM COMPUTERS PROCESS MASSIVE CALCULATIONS SECONDS KNOWLEDGE POWER SAFEGUARDING VITAL " +
+      "CRYPTOGRAPHIC SYSTEMS PROTECT CONFIDENTIAL CORPORATE INFORMATION QUICK BROWN FOX JUMPS LAZY DOG").split(" ");
 
     const WORDS_BY_PATTERN = {};
     function wordPattern(w) {
@@ -415,6 +417,37 @@ const samples = {
         search(0, {}, {}, 0);
         return best.map;
     }
+    // --- Classical solver: tries every Caesar / Atbash / Affine key ---
+const WORD_SET = new Set(WORD_LIST);
+
+function solveClassical(cipher) {
+    const results = [];
+    for (const a of [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]) {
+        for (let b = 0; b < 26; b++) {
+            const map = {};
+            for (let p = 0; p < 26; p++) {
+                map[alphabet[(a * p + b) % 26]] = alphabet[p];   // cipher -> plain
+            }
+            const plain = cipher.replace(/[A-Z]/g, c => map[c]);
+            let score = scoreText(plain);
+            for (const w of plain.split(/[^A-Z]+/)) {
+                if (w.length > 1 && WORD_SET.has(w)) score += 3 * w.length;
+            }
+            results.push({ a, b, map, score });
+        }
+    }
+    results.sort((x, y) => y.score - x.score);
+    const best = results[0], second = results[1];
+
+    // accept if clearly ahead of the runner-up
+    if (best.score < 8 || best.score < 1.2 * second.score) return null;
+
+    let name;
+    if (best.a === 1) name = `Caesar cipher (shift ${best.b})`;
+    else if (best.a === 25 && best.b === 25) name = "Atbash cipher";
+    else name = `Affine cipher (a=${best.a}, b=${best.b})`;
+    return { mapping: best.map, name };
+}
 
     function autoSolve() {
         analyzeFrequency();
@@ -428,17 +461,44 @@ const samples = {
         if (sid && samples[sid] && samples[sid].ciphertext === text.trim()) {
             mapping = samples[sid].mapping;
             message = "Solution filled in from the sample's answer key.";
-        } else {
+                } else {
+            const classical = solveClassical(text);
             const letterCount = (text.match(/[A-Z]/g) || []).length;
-            if (letterCount >= 200) {
+            if (classical) {
+                mapping = classical.mapping;
+                message = `Detected ${classical.name}. Solution filled in.`;
+            } else if (letterCount >= 200) {
                 const key = solveSubstitution(text);
                 for (let i = 0; i < 26; i++) mapping[String.fromCharCode(65 + i)] = key[i];
                 message = "Auto-solve gave its best guess. Fix any wrong letters by hand.";
             } else {
-                mapping = solveByWords(text);
-                message = "Short text: letters were filled in by matching words from a dictionary. " +
-                          "Blank boxes mean no word matched. Fill those in by hand.";
+    mapping = solveByWords(text);
+    // fill unknown letters, then polish with hill-climbing
+    const used = new Set(Object.values(mapping));
+    const freeP = [...ENGLISH_ORDER].filter(p => !used.has(p));
+    const freeC = [...alphabet].filter(c => !(c in mapping));
+    const count = c => (text.split(c).length - 1);
+    freeC.sort((a, b) => count(b) - count(a));
+    freeC.forEach((c, i) => { mapping[c] = freeP[i]; });
+
+    // hill-climb only over the letters the word matcher did not fix
+    const locked = new Set(Object.keys(solveByWords(text)));
+    const dec = m => text.replace(/[A-Z]/g, c => m[c]);
+    let best = scoreText(dec(mapping)), improved = true;
+    const free = freeC.slice();
+    while (improved) {
+        improved = false;
+        for (let i = 0; i < free.length; i++) {
+            for (let j = i + 1; j < free.length; j++) {
+                [mapping[free[i]], mapping[free[j]]] = [mapping[free[j]], mapping[free[i]]];
+                const s = scoreText(dec(mapping));
+                if (s > best) { best = s; improved = true; }
+                else { [mapping[free[i]], mapping[free[j]]] = [mapping[free[j]], mapping[free[i]]]; }
             }
+        }
+    }
+    message = "Best guess from word matching plus statistics. Check the preview and fix wrong letters by hand.";
+}
         }
 
         currentFreqData.forEach(item => {
