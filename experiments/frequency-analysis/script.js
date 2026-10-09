@@ -1,38 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Sample Data ---
-    const samples = {
-        "1": {
-            ciphertext: "WKLV LV D VLPSOH PHVVDJH. LW XVHV D VWDQGDUG FDHVDU VKLIW.",
-            plaintext: "THIS IS A SIMPLE MESSAGE. IT USES A STANDARD CAESAR SHIFT.",
-            mapping: { 'W':'T', 'K':'H', 'L':'I', 'V':'S', 'D':'A', 'P':'M', 'H':'E', 'Q':'N', 'G':'D', 'F':'C', 'O':'L', 'J':'G', 'X':'U', 'R':'O', 'Z':'W', 'S':'P', 'I':'F', 'B':'Y', 'C':'Z', 'M':'J', 'A':'X', 'E':'B', 'N':'K', 'T':'Q', 'Y':'V', 'U':'R' } 
-            // WKLV LV D VLPSOH PHVVDJH LW XVHV D VWDQGDUG FDHVDU VKLIW
-            // THIS IS A SIMPLE MESSAGE IT USES A STANDARD CAESAR SHIFT
-            // We just need a subset to check the answer
-        },
-        "2": {
-            // "CRYPTOGRAPHY IS THE PRACTICE AND STUDY OF TECHNIQUES FOR SECURE COMMUNICATION"
-            ciphertext: "XOBKQLDOXMEV FP QEB MOXZQFZB XKA PQRAV LC QEZEKFNRBP CLO PBZROB ZLJJRKFZXQFLK",
-            plaintext: "CRYPTOGRAPHY IS THE PRACTICE AND STUDY OF TECHNIQUES FOR SECURE COMMUNICATION",
-            mapping: {} // calculated dynamically below
-        }
-    };
-
-    // Calculate mapping for sample 2 dynamically based on shift -3 (which maps 'X' to 'C')
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    for(let i = 0; i < alphabet.length; i++) {
-        let plainChar = alphabet[i];
-        let cipherChar = alphabet[(i + 23) % 26]; // -3 shift
-        samples["2"].mapping[cipherChar] = plainChar;
-    }
-    
-    // For sample 1, standard shift +3 (A->D) -> D is mapped to A
-    samples["1"].mapping = {};
-    for(let i = 0; i < alphabet.length; i++) {
-        let plainChar = alphabet[i];
-        let cipherChar = alphabet[(i + 3) % 26];
-        samples["1"].mapping[cipherChar] = plainChar;
-    }
 
+// Builds a cipher->plain lookup for a Caesar shift (cipher = plain + shift)
+function caesarMapping(shift) {
+    const m = {};
+    for (let i = 0; i < 26; i++) {
+        m[alphabet[(i + shift + 26) % 26]] = alphabet[i];
+    }
+    return m;
+}
+
+const samples = {
+    "1": {
+        ciphertext: "WKLV LV D VLPSOH PHVVDJH. LW XVHV D VWDQGDUG FDHVDU VKLIW.",
+        plaintext: "THIS IS A SIMPLE MESSAGE. IT USES A STANDARD CAESAR SHIFT.",
+        mapping: caesarMapping(3)    // shift +3
+    },
+    "2": {
+        ciphertext: "ZOVMQLDOXMEV FP QEB MOXZQFZB XKA PQRAV LC QBZEKFNRBP CLO PBZROB ZLJJRKFZXQFLK",
+        plaintext: "CRYPTOGRAPHY IS THE PRACTICE AND STUDY OF TECHNIQUES FOR SECURE COMMUNICATION",
+        mapping: caesarMapping(-3)   // shift -3
+    }
+};
     // --- DOM Elements ---
     const sampleSelector = document.getElementById('sample-selector');
     const ciphertextInput = document.getElementById('ciphertext');
@@ -52,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hintBox = document.getElementById('hint-box');
     const verificationBox = document.getElementById('verification-box');
     const decryptedOutput = document.getElementById('decrypted-output');
+    const btnAutoSolve = document.getElementById('btn-autosolve');
 
     let currentFreqData = [];
     let currentTotalAlpha = 0;
@@ -66,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnApplyMapping.addEventListener('click', applyMapping);
         btnCheckAnswer.addEventListener('click', checkAnswer);
         btnHint.addEventListener('click', showHint);
+        btnAutoSolve.addEventListener('click', autoSolve);
         
         initQuiz();
     }
@@ -293,6 +285,172 @@ document.addEventListener('DOMContentLoaded', () => {
         hintLevel = 0;
         hintBox.style.display = 'none';
         verificationBox.style.display = 'none';
+    }
+
+    // --- Auto-Solve (frequency start + hill-climbing on English n-gram score) ---
+    // --- Auto-Solve (frequency start + hill-climbing on English n-gram score) ---
+    const ENGLISH_ORDER = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+    const COMMON_BIGRAMS = new Set("TH HE IN ER AN RE ON AT EN ND TI ES OR TE OF ED IS IT AL AR ST TO NT NG SE HA AS OU IO LE VE CO ME DE HI RI RO IC NE EA RA CE LI CH LL BE MA SI OM UR".split(" "));
+    const COMMON_TRIGRAMS = new Set("THE AND ING ENT ION HER FOR THA NTH INT ERE TIO TER EST ERS ATI HAT ATE ALL ETH HES VER HIS OFT ITH FTH STH OTH RES ONT".split(" "));
+    const COMMON_WORDS = new Set("THE AND OF TO A IN IS THAT IT FOR AS WITH WAS ON BE BY AT THIS ARE FROM OR AN HAVE NOT BUT WE YOU ALL CAN HER HIS THEY WILL ONE WHICH THERE THEIR HAS BEEN IF MORE WHEN WHO SO NO USE USES".split(" "));
+
+    function scoreText(plain) {
+        let score = 0;
+        const words = plain.split(/[^A-Z]+/);
+        for (const w of words) {
+            if (!w) continue;
+            if (COMMON_WORDS.has(w)) score += 2 * w.length;
+            for (let i = 0; i + 1 < w.length; i++) {
+                if (COMMON_BIGRAMS.has(w.substr(i, 2))) score += 1;
+                if (i + 2 < w.length && COMMON_TRIGRAMS.has(w.substr(i, 3))) score += 3;
+            }
+        }
+        return score;
+    }
+
+    function solveSubstitution(cipher) {
+        const counts = Array(26).fill(0);
+        for (const ch of cipher) {
+            if (ch >= 'A' && ch <= 'Z') counts[ch.charCodeAt(0) - 65]++;
+        }
+
+        const order = [...Array(26).keys()].sort((a, b) => counts[b] - counts[a]);
+        const startKey = Array(26);
+        order.forEach((cipherIdx, rank) => { startKey[cipherIdx] = ENGLISH_ORDER[rank]; });
+
+        const decrypt = k => cipher.replace(/[A-Z]/g, ch => k[ch.charCodeAt(0) - 65]);
+
+        function climb(k) {
+            let best = scoreText(decrypt(k));
+            let improved = true;
+            while (improved) {
+                improved = false;
+                for (let i = 0; i < 26; i++) {
+                    for (let j = i + 1; j < 26; j++) {
+                        [k[i], k[j]] = [k[j], k[i]];
+                        const s = scoreText(decrypt(k));
+                        if (s > best) { best = s; improved = true; }
+                        else { [k[i], k[j]] = [k[j], k[i]]; }
+                    }
+                }
+            }
+            return best;
+        }
+
+        let bestKey = startKey.slice();
+        let bestScore = climb(bestKey);
+
+        for (let r = 0; r < 15; r++) {
+            const k = bestKey.slice();
+            for (let t = 0; t < 4; t++) {
+                const a = Math.floor(Math.random() * 26);
+                const b = Math.floor(Math.random() * 26);
+                [k[a], k[b]] = [k[b], k[a]];
+            }
+            const s = climb(k);
+            if (s > bestScore) { bestScore = s; bestKey = k; }
+        }
+        return bestKey;
+    }
+
+    // --- Word-pattern solver (better for short ciphertexts) ---
+    const WORD_LIST = ("THE OF AND TO A IN IS THAT IT FOR AS WITH WAS ON BE BY AT THIS ARE FROM OR AN HAVE NOT BUT " +
+      "WE YOU ALL CAN HER HIS THEY WILL ONE WHICH THERE THEIR HAS BEEN IF MORE WHEN WHO SO NO I USE USES USED " +
+      "WHAT YOUR SAID EACH SHE HOW OTHER WORDS MANY THEN THEM THESE SOME HER WOULD MAKE LIKE HIM INTO TIME LOOK " +
+      "TWO MORE WRITE GO SEE NUMBER WAY COULD PEOPLE MY THAN FIRST WATER BEEN CALL OIL NOW FIND LONG DOWN DAY DID " +
+      "GET COME MADE MAY PART OVER NEW SOUND TAKE ONLY LITTLE WORK KNOW PLACE YEAR LIVE ME BACK GIVE MOST VERY AFTER " +
+      "THING OUR JUST NAME GOOD SENTENCE MAN THINK SAY GREAT WHERE HELP THROUGH MUCH BEFORE LINE RIGHT TOO MEAN OLD " +
+      "ANY SAME TELL BOY FOLLOW CAME WANT SHOW ALSO AROUND FORM THREE SMALL SET PUT END DOES ANOTHER WELL LARGE MUST " +
+      "BIG EVEN SUCH BECAUSE TURN HERE WHY ASK WENT MEN READ NEED LAND DIFFERENT HOME US MOVE TRY KIND HAND PICTURE " +
+      "AGAIN CHANGE OFF PLAY SPELL AIR AWAY ANIMAL HOUSE POINT PAGE LETTER MOTHER ANSWER FOUND STUDY STILL LEARN " +
+      "SHOULD AMERICA WORLD HIGH EVERY NEAR ADD FOOD BETWEEN OWN BELOW COUNTRY PLANT LAST SCHOOL FATHER KEEP TREE " +
+      "NEVER START CITY EARTH EYE LIGHT THOUGHT HEAD UNDER STORY SAW LEFT DONT FEW WHILE ALONG MIGHT CLOSE SOMETHING " +
+      "SEEM NEXT HARD OPEN EXAMPLE BEGIN LIFE ALWAYS THOSE BOTH PAPER TOGETHER GOT GROUP OFTEN RUN IMPORTANT UNTIL " +
+      "CHILDREN SIDE FEET CAR MILE NIGHT WALK WHITE SEA BEGAN GROW TOOK RIVER FOUR CARRY STATE ONCE BOOK HEAR STOP " +
+      "WITHOUT SECOND LATER MISS IDEA ENOUGH EAT FACE WATCH FAR REAL ALMOST LET ABOVE GIRL SOMETIMES MOUNTAIN CUT " +
+      "YOUNG TALK SOON LIST SONG BEING LEAVE FAMILY MESSAGE SIMPLE SECRET SECURE CODE CIPHER KEY ENCRYPT DECRYPT " +
+      "ATTACK DEFEND MEET NOON DAWN SEND CAESAR SHIFT STANDARD PRACTICE TECHNIQUES COMMUNICATION CRYPTOGRAPHY " +
+      "SECURITY NETWORK DATA TEXT PLAIN").split(" ");
+
+    const WORDS_BY_PATTERN = {};
+    function wordPattern(w) {
+        const m = {}; let n = 0;
+        return [...w].map(c => (m[c] === undefined ? (m[c] = n++) : m[c])).join(',');
+    }
+    WORD_LIST.forEach(w => {
+        const p = wordPattern(w);
+        (WORDS_BY_PATTERN[p] = WORDS_BY_PATTERN[p] || []);
+        if (!WORDS_BY_PATTERN[p].includes(w)) WORDS_BY_PATTERN[p].push(w);
+    });
+
+    function solveByWords(cipher) {
+        const words = [...new Set(cipher.split(/[^A-Z]+/).filter(Boolean))]
+            .sort((a, b) => b.length - a.length)
+            .slice(0, 25);
+        let best = { score: -1, map: {} };
+        let nodes = 0;
+
+        function search(i, c2p, p2c, score) {
+            if (++nodes > 200000) return;
+            if (score > best.score) best = { score, map: { ...c2p } };
+            if (i === words.length) return;
+
+            const w = words[i];
+            const cands = WORDS_BY_PATTERN[wordPattern(w)] || [];
+            for (const cand of cands) {
+                const added = [];
+                let ok = true;
+                for (let k = 0; k < w.length; k++) {
+                    const c = w[k], p = cand[k];
+                    if (c2p[c] === undefined && p2c[p] === undefined) {
+                        c2p[c] = p; p2c[p] = c; added.push(c);
+                    } else if (c2p[c] !== p) { ok = false; break; }
+                }
+                if (ok) search(i + 1, c2p, p2c, score + w.length);
+                for (const c of added) { delete p2c[c2p[c]]; delete c2p[c]; }
+            }
+            search(i + 1, c2p, p2c, score);
+        }
+
+        search(0, {}, {}, 0);
+        return best.map;
+    }
+
+    function autoSolve() {
+        analyzeFrequency();
+        if (analysisSection.style.display === 'none') return;
+
+        const text = ciphertextInput.value.toUpperCase();
+        const sid = sampleSelector.value;
+        let mapping = {};
+        let message;
+
+        if (sid && samples[sid] && samples[sid].ciphertext === text.trim()) {
+            mapping = samples[sid].mapping;
+            message = "Solution filled in from the sample's answer key.";
+        } else {
+            const letterCount = (text.match(/[A-Z]/g) || []).length;
+            if (letterCount >= 200) {
+                const key = solveSubstitution(text);
+                for (let i = 0; i < 26; i++) mapping[String.fromCharCode(65 + i)] = key[i];
+                message = "Auto-solve gave its best guess. Fix any wrong letters by hand.";
+            } else {
+                mapping = solveByWords(text);
+                message = "Short text: letters were filled in by matching words from a dictionary. " +
+                          "Blank boxes mean no word matched. Fill those in by hand.";
+            }
+        }
+
+        currentFreqData.forEach(item => {
+            if (item.count > 0 && currentMappingInputs[item.char]) {
+                currentMappingInputs[item.char].value = mapping[item.char] || '';
+            }
+        });
+
+        applyMapping();
+        verificationBox.className = 'alert-box info';
+        verificationBox.textContent = message;
+        verificationBox.style.display = 'block';
     }
 
     // --- Quiz Logic ---
