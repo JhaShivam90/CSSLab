@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
             qDiv.className = 'quiz-question';
             
             const qText = document.createElement('p');
-            qText.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question}`;
+            qText.innerHTML = `<span>${index + 1}.</span> ${q.question}`;
             qDiv.appendChild(qText);
             
             const optionsDiv = document.createElement('div');
@@ -361,8 +361,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 radio.name = `quiz-${index}`;
                 radio.value = optIndex;
                 
+                const optionText = document.createElement('span');
+                optionText.textContent = opt;
+                
                 label.appendChild(radio);
-                label.appendChild(document.createTextNode(opt));
+                label.appendChild(optionText);
                 optionsDiv.appendChild(label);
             });
             
